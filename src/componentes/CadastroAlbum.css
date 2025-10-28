@@ -1,0 +1,73 @@
+
+.cadastro-wrapper {
+  width: 100%;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+}
+
+.cadastro-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.cadastro-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  color: #1d3c72;
+}
+
+.form-album {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-album label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-album input {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.form-album input:focus {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 2px #fef08a;
+}
+
+.form-album button {
+  padding: 0.8rem 1.2rem;
+  background-color: #1d3c72;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.form-album button:hover {
+  background-color: #2c4d91;
+}
+.mensagem {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
