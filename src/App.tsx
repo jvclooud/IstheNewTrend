@@ -34,21 +34,24 @@ function App() {
   }
 
   const fetchAlbuns = () => {
-    fetch('http://localhost:8080/albuns')
-      .then(async res => {
-        const data = await res.json()
-        if (!res.ok) {
-          setMensagem(data.mensagem || 'Erro ao buscar álbuns.')
-          setProdutos([])
-        } else {
-          setProdutos(data)
-          setMensagem(null)
-        }
-      })
-      .catch(() => {
-        setMensagem('Erro de conexão com o servidor.')
-        setProdutos([])
-      })
+    api.get('/albuns')
+    .then(response => {
+      console.log(response.data)
+    })
+      // .then(async res => {
+      //   const data = await res.json()
+      //   if (!res.ok) {
+      //     setMensagem(data.mensagem || 'Erro ao buscar álbuns.')
+      //     setProdutos([])
+      //   } else {
+      //     setProdutos(data)
+      //     setMensagem(null)
+      //   }
+      // })
+      // .catch(() => {
+      //   setMensagem('Erro de conexão com o servidor.')
+      //   setProdutos([])
+      // })
   }
 
   useEffect(() => {
@@ -59,22 +62,20 @@ function App() {
     setMostrarCadastro(true)
   }
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Tem certeza que deseja apagar este álbum?')) return
+  // Remover do carrinho (função utilitária, pode ser usada em botões futuramente)
+  const handleRemoverDoCarrinho = async (produtoId: string) => {
     try {
-      const resposta = await fetch(`http://localhost:8080/albuns/${id}`, { method: 'DELETE' })
-      const dados = await resposta.json()
-      if (!resposta.ok) {
-        setMensagem(dados.mensagem || 'Erro ao apagar álbum.')
+      const resposta = await api.post('/removerItem', { produtoId })
+      if (resposta.status === 200 || resposta.status === 204) {
+        setMensagem('Item removido do carrinho com sucesso!')
+        // Opcional: atualizar carrinho aqui
       } else {
-        setMensagem('Álbum apagado com sucesso!')
-        fetchAlbuns()
+        setMensagem(resposta.data.mensagem || 'Erro ao remover item do carrinho.')
       }
-    } catch {
-      setMensagem('Erro de conexão com o servidor.')
+    } catch (erro) {
+      setMensagem('Erro de conexão ou ao remover item do carrinho.')
     }
   }
-
   function adicionarCarrinho(produtoId: string) {
     api.post('/adicionarItem',{ produtoId , quantidade:1 })
     .then(()=>alert("Produto adicionando no carrinho!"))
@@ -183,7 +184,19 @@ function App() {
                 <h3>{album.titulo}</h3>
                 <p><strong>ID:</strong> {album.id}</p>
                 <p>R$ {Number(album.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                <button>COMPRAR</button>
+                {/* Botões para o modo de compra */}
+                {!mostrarCadastro && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => adicionarCarrinho(String(album.id))}>COMPRAR</button>
+                    {/* NOVO BOTÃO DE REMOVER: Você só mostraria este se o item estivesse no carrinho */}
+                    <button 
+                      style={{ background: 'darkred', color: 'white' }}
+                      onClick={() => handleRemoverDoCarrinho(String(album.id))}
+                    >
+                      REMOVER 
+                    </button>
+                  </div>
+                )}
                 {mostrarCadastro && (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
@@ -194,7 +207,7 @@ function App() {
                     </button>
                     <button
                       style={{ background: 'red', color: 'white' }}
-                      onClick={() => handleDelete(album.id)}
+                      onClick={() => handleRemoverDoCarrinho(album.id)}
                     >
                       APAGAR
                     </button>
