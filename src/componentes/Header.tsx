@@ -1,9 +1,18 @@
+import { useNavigate } from 'react-router-dom';
+
 interface HeaderProps {
   mostrarCadastro: boolean;
   onAdminClick: () => void;
 }
 
 export function Header({ mostrarCadastro, onAdminClick }: HeaderProps) {
+  const navigate = useNavigate();
+
+  const handleAdminClick = () => {
+    navigate('/admin');
+    onAdminClick();
+  };
+
   return (
     <header className="header">
       <div className="logo">NewTrend</div>
@@ -15,7 +24,7 @@ export function Header({ mostrarCadastro, onAdminClick }: HeaderProps) {
       </nav>
       <div className="actions">
         <button>USUÁRIO</button>
-        <button onClick={onAdminClick}>ADMINISTRADOR</button>
+        <button onClick={handleAdminClick}>ADMINISTRADOR</button>
       </div>
     </header>
   )

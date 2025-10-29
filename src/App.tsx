@@ -3,9 +3,13 @@ import './App.css'
 import api from './api/api'
 import { Header } from './componentes/Header.tsx'
 
-function App() {
+interface AppProps {
+  isAdmin?: boolean;
+}
+
+function App({ isAdmin = false }: AppProps) {
   const [produtos, setProdutos] = useState<any[]>([])
-  const [mostrarCadastro, setMostrarCadastro] = useState(false)
+  const [mostrarCadastro, setMostrarCadastro] = useState(isAdmin)
   const [mensagem, setMensagem] = useState<string | null>(null)
   const [campoFiltro, setCampoFiltro] = useState('titulo')
   const [valorFiltro, setValorFiltro] = useState('')

@@ -12,6 +12,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="/admin" element={<App isAdmin={true} />} />
         <Route path="/login" element={<Login/>} />
         <Route path="/error" element={<Erro/>} />
         <Route path="/cadastro" element={<CadastroAlbum/>} />
