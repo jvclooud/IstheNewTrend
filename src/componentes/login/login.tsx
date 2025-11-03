@@ -13,25 +13,29 @@ function Login() {
     //Função chamada quando clicamos no botão do formulário
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
-        //Vamos pegar o que a pessoa digitou no formulário
+        // Pegar o que a pessoa digitou no formulário
         const formData = new FormData(event.currentTarget)
         const email = formData.get("email")
         const senha = formData.get("senha")
 
-        //chamar a API.post para mandar o login e senha
+        // Pegar o redirect da URL se existir
+        const redirect = searchParams.get("redirect") || "/"
+
+        // Chamar a API.post para mandar o login e senha
         api.post("/login", {
             email,
             senha
         }).then(resposta => {
             if (resposta.status === 200) {
                 localStorage.setItem("token", resposta?.data?.token)
-                navigate("/")
+                // Redireciona para a página anterior ou a página inicial
+                navigate(redirect)
             }
         }).catch((error: any) => {
             const msg = error?.response?.data?.mensagem ||
                 error?.mensagem ||
                 "Erro Desconhecido!"
-            navigate(`/login?mensagem=${encodeURIComponent(msg)}`)
+            navigate(`/login?mensagem=${encodeURIComponent(msg)}&redirect=${encodeURIComponent(redirect)}`)
         })
     }
 
