@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../api/api";
 import "./Carrinho.css";
 
@@ -11,7 +11,6 @@ interface ItemCarrinho {
 }
 
 interface Carrinho {
-  usuarioId: string;
   itens: ItemCarrinho[];
   total: number;
   dataAtualizacao: string;
@@ -22,6 +21,7 @@ export default function Carrinho() {
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
+  const fallbackTimeout = useRef<number | null>(null);
 
   const atualizarQuantidade = (albumId: string, quantidade: number) => {
     if (!usuarioId) {
@@ -67,8 +67,8 @@ export default function Carrinho() {
       console.log("Token:", token);
       
       if (!token) {
-        setMensagem("Você precisa estar logado para ver o carrinho");
-        setCarregando(false);
+        // Redireciona para o login preservando a rota de destino
+        window.location.href = `/login?mensagem=${encodeURIComponent('Você precisa estar logado para ver o carrinho')}&redirect=/carrinho`;
         return;
       }
 
@@ -120,24 +120,68 @@ export default function Carrinho() {
       setCarregando(false);
     }
 
-    setCarregando(true);
-    api.get(`/carrinho/${usuarioId}`)
-      .then((response) => {
-        setCarrinho(response.data);
-        setMensagem(null);
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar carrinho:", error);
-        if (error.code === "ERR_NETWORK") {
-          setMensagem("Erro de conexão com o servidor.");
-        } else {
-          setMensagem(error.response?.data?.mensagem || "Erro ao carregar carrinho.");
-        }
-      })
-      .finally(() => {
-        setCarregando(false);
-      });
+    // NOTE: a primeira busca do carrinho já foi feita acima (usando tokenData.usuarioId).
+    // Removido fetch duplicado que usava o estado `usuarioId` ainda não inicializado.
   }, []);
+
+  // Escuta eventos para atualização em tempo real do carrinho (emitidos por outras partes da app)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const custom = e as CustomEvent;
+        if (custom?.detail) {
+          const cart = custom.detail as Carrinho;
+          setCarrinho(cart);
+          setMensagem(null);
+          setCarregando(false);
+          // limpar qualquer fallback pendente
+          if (fallbackTimeout.current) {
+            window.clearTimeout(fallbackTimeout.current);
+            fallbackTimeout.current = null;
+          }
+          // Se o evento trouxer usuarioId (algumas APIs retornam), atualiza também
+          if ((cart as any).usuarioId) {
+            setUsuarioId((cart as any).usuarioId);
+          }
+        }
+      } catch (err) {
+        console.warn('Erro ao processar evento cartUpdated', err);
+      }
+    };
+
+    window.addEventListener('cartUpdated', handler as EventListener);
+    return () => window.removeEventListener('cartUpdated', handler as EventListener);
+  }, []);
+
+  // Fallback: se um add ao carrinho for tentado e não receber cartUpdated em X ms, refaz a fetch
+  useEffect(() => {
+    const attemptHandler = () => {
+      // limpa timeout anterior
+      if (fallbackTimeout.current) {
+        window.clearTimeout(fallbackTimeout.current);
+        fallbackTimeout.current = null;
+      }
+      // agenda refetch em 1200ms caso cartUpdated não chegue
+      fallbackTimeout.current = window.setTimeout(() => {
+        if (!usuarioId) return;
+        api.get(`/carrinho/${usuarioId}`)
+          .then((res) => {
+            setCarrinho(res.data);
+            setMensagem(null);
+          })
+          .catch((error) => {
+            console.warn('Fallback: erro ao buscar carrinho', error);
+          })
+          .finally(() => {
+            fallbackTimeout.current = null;
+            setCarregando(false);
+          });
+      }, 1200) as unknown as number;
+    };
+
+    window.addEventListener('cartAddAttempt', attemptHandler as EventListener);
+    return () => window.removeEventListener('cartAddAttempt', attemptHandler as EventListener);
+  }, [usuarioId]);
 
   // 🔹 Renderização
   if (carregando) return <div className="carrinho-carregando">Carregando...</div>;

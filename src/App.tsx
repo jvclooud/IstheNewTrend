@@ -86,13 +86,38 @@ function App({ isAdmin = false }: AppProps) {
       setMensagem('Erro de conexão ou ao remover item do carrinho.')
     }
   }
-  function adicionarCarrinho(produtoId: string) {
-    api.post('/adicionarItem',{ produtoId , quantidade:1 })
-    .then(()=>alert("Produto adicionando no carrinho!"))
-    .catch((error) => {
-      console.error('Error posting data:', error)
-      alert('Error posting data:'+error?.mensagem)
-    })
+  async function adicionarCarrinho(albunsId: string) {
+    try {
+      // envia albunsId e quantidade; o backend recupera usuarioId do token
+      await api.post('/adicionarItem', { albunsId, quantidade: 1 });
+      setMensagem('Item adicionado ao carrinho');
+
+      // Após adicionar, buscar o carrinho atualizado e emitir evento para atualizar componentes
+      try {
+        // Dispara evento indicando tentativa de adicionar ao carrinho (fallback listener pode reagir)
+        window.dispatchEvent(new CustomEvent('cartAddAttempt'));
+
+        const token = localStorage.getItem('token');
+        if (token) {
+          const res = await api.get(`/carrinho`);
+          const cart = res.data;
+          // Dispara evento customizado com os dados do carrinho
+          const evt = new CustomEvent('cartUpdated', { detail: cart });
+          window.dispatchEvent(evt);
+        }
+      } catch (e) {
+        // Não bloquear a UX principal se falhar ao buscar o carrinho
+        console.warn('Não foi possível atualizar o carrinho em tempo real', e);
+      }
+    } catch (err) {
+      console.error('Erro ao adicionar ao carrinho:', err);
+      const error = err as any;
+      setMensagem(
+        error?.code === 'ERR_NETWORK'
+          ? 'Erro de conexão com o servidor.'
+          : error?.response?.data?.mensagem || 'Erro ao adicionar ao carrinho.'
+      );
+    }
   }
   return (
     <div style={{ width: '100%' }}>
@@ -193,7 +218,7 @@ function App({ isAdmin = false }: AppProps) {
                 {/* Botões para o modo de compra */}
                 {!isAdmin && (
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => adicionarCarrinho(album._id)}>COMPRAR</button>
+                    <button onClick={() => adicionarCarrinho(album._id)}>Adicionar</button>
                     {/* NOVO BOTÃO DE REMOVER: Você só mostraria este se o item estivesse no carrinho */}
                     <button 
                       style={{ background: 'darkred', color: 'white' }}
