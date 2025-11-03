@@ -2,20 +2,30 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { BrowserRouter , Routes , Route} from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './componentes/login/login.tsx'
 import Erro from './componentes/erro/erro.tsx'
 import CadastroAlbum from './componentes/CadastroAlbum.tsx'
+import Carrinho from './componentes/Carrinho.tsx'
+import ProtectedAdminRoute from './componentes/ProtectedAdminRoute.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/admin" element={<App isAdmin={true} />} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/error" element={<Erro/>} />
-        <Route path="/cadastro" element={<CadastroAlbum/>} />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedAdminRoute>
+              <App isAdmin={true} />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/error" element={<Erro />} />
+        <Route path="/cadastro" element={<CadastroAlbum />} />
+        <Route path="/carrinho" element={<Carrinho />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

@@ -7,13 +7,30 @@ interface AppProps {
   isAdmin?: boolean;
 }
 
+interface Album {
+  _id: string;
+  titulo: string;
+  artista: string;
+  preco: string;
+  ano_lancamento: string;
+  genero: string;
+}
+
+interface ApiError {
+  code?: string;
+  response?: {
+    data?: {
+      mensagem?: string;
+    };
+  };
+}
+
 function App({ isAdmin = false }: AppProps) {
-  const [produtos, setProdutos] = useState<any[]>([])
-  const [mostrarCadastro, setMostrarCadastro] = useState(isAdmin)
+  const [produtos, setProdutos] = useState<Album[]>([])
   const [mensagem, setMensagem] = useState<string | null>(null)
   const [campoFiltro, setCampoFiltro] = useState('titulo')
   const [valorFiltro, setValorFiltro] = useState('')
-  const [albumEditando, setAlbumEditando] = useState<any | null>(null)
+  const [albumEditando, setAlbumEditando] = useState<Album | null>(null)
 
   const buscarComFiltro = async () => {
     if (!valorFiltro.trim()) {
@@ -22,49 +39,38 @@ function App({ isAdmin = false }: AppProps) {
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/albuns/filtro/${campoFiltro}/${encodeURIComponent(valorFiltro)}`)
-      const dados = await res.json()
-      if (!res.ok) {
-        setMensagem(dados.mensagem || 'Erro ao buscar álbuns.')
-        setProdutos([])
-      } else {
-        setProdutos(dados)
-        setMensagem(null)
-      }
-    } catch (erro) {
-      setMensagem('Erro ao buscar álbuns.')
-      setProdutos([])
+      const response = await api.get<Album[]>(`/albuns/filtro/${campoFiltro}/${encodeURIComponent(valorFiltro)}`);
+      setProdutos(response.data);
+      setMensagem(null);
+    } catch (error) {
+      console.error('Erro ao buscar álbuns:', error);
+      const err = error as ApiError;
+      setMensagem(err.code === 'ERR_NETWORK' 
+        ? 'Erro de conexão com o servidor.' 
+        : err.response?.data?.mensagem || 'Erro ao buscar álbuns.');
+      setProdutos([]);
     }
   }
 
   const fetchAlbuns = () => {
-    api.get('/albuns')
-    .then(response => {
-      console.log(response.data)
-    })
-      // .then(async res => {
-      //   const data = await res.json()
-      //   if (!res.ok) {
-      //     setMensagem(data.mensagem || 'Erro ao buscar álbuns.')
-      //     setProdutos([])
-      //   } else {
-      //     setProdutos(data)
-      //     setMensagem(null)
-      //   }
-      // })
-      // .catch(() => {
-      //   setMensagem('Erro de conexão com o servidor.')
-      //   setProdutos([])
-      // })
+    api.get<Album[]>('/albuns')
+      .then(response => {
+        console.log('Álbuns recebidos:', response.data);
+        setProdutos(response.data);
+        setMensagem(null);
+      })
+      .catch((error: ApiError) => {
+        console.error('Erro ao buscar álbuns:', error);
+        setMensagem(error.code === 'ERR_NETWORK' 
+          ? 'Erro de conexão com o servidor.' 
+          : error.response?.data?.mensagem || 'Erro ao buscar álbuns.');
+        setProdutos([]);
+      });
   }
 
   useEffect(() => {
     fetchAlbuns()
   }, [])
-
-  const handleAdminClick = () => {
-    setMostrarCadastro(true)
-  }
 
   // Remover do carrinho (função utilitária, pode ser usada em botões futuramente)
   const handleRemoverDoCarrinho = async (produtoId: string) => {
@@ -90,7 +96,7 @@ function App({ isAdmin = false }: AppProps) {
   }
   return (
     <div style={{ width: '100%' }}>
-      <Header mostrarCadastro={mostrarCadastro} onAdminClick={handleAdminClick} />
+      <Header mostrarCadastro={isAdmin} onAdminClick={() => {}} />
       {mensagem && (
         <div className="mensagem-erro" style={{ color: 'red', margin: 16 }}>
           {mensagem}
@@ -144,21 +150,16 @@ function App({ isAdmin = false }: AppProps) {
           <form onSubmit={async e => {
             e.preventDefault()
             try {
-              const res = await fetch(`http://localhost:8080/albuns/${albumEditando.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(albumEditando)
-              })
-              const dados = await res.json()
-              if (!res.ok) {
-                setMensagem(dados.mensagem || 'Erro ao atualizar álbum.')
-              } else {
-                setMensagem('Álbum atualizado com sucesso!')
-                setAlbumEditando(null)
-                fetchAlbuns()
-              }
-            } catch {
-              setMensagem('Erro ao conectar com servidor.')
+              await api.put<Album>(`/albuns/${albumEditando._id}`, albumEditando);
+              setMensagem('Álbum atualizado com sucesso!');
+              setAlbumEditando(null);
+              fetchAlbuns();
+            } catch (error) {
+              console.error('Erro ao atualizar álbum:', error);
+              const err = error as ApiError;
+              setMensagem(err.code === 'ERR_NETWORK' 
+                ? 'Erro de conexão com o servidor.'
+                : err.response?.data?.mensagem || 'Erro ao atualizar álbum.');
             }
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -183,25 +184,26 @@ function App({ isAdmin = false }: AppProps) {
             <p>Nenhum álbum cadastrado ainda.</p>
           ) : (
             produtos.map((album, i) => (
-              <div key={album.id || i} className="card-album">
+              <div key={album._id || i} className="card-album">
                 <img src="/placeholder.jpg" alt="Capa do Álbum" />
                 <h3>{album.titulo}</h3>
-                <p><strong>ID:</strong> {album.id}</p>
+                <p><strong>Artista:</strong> {album.artista}</p>
+                <p><strong>Gênero:</strong> {album.genero}</p>
                 <p>R$ {Number(album.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                 {/* Botões para o modo de compra */}
-                {!mostrarCadastro && (
+                {!isAdmin && (
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => adicionarCarrinho(String(album.id))}>COMPRAR</button>
+                    <button onClick={() => adicionarCarrinho(album._id)}>COMPRAR</button>
                     {/* NOVO BOTÃO DE REMOVER: Você só mostraria este se o item estivesse no carrinho */}
                     <button 
                       style={{ background: 'darkred', color: 'white' }}
-                      onClick={() => handleRemoverDoCarrinho(String(album.id))}
+                      onClick={() => handleRemoverDoCarrinho(album._id)}
                     >
                       REMOVER 
                     </button>
                   </div>
                 )}
-                {mostrarCadastro && (
+                {isAdmin && (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
                       style={{ background: 'orange', color: 'white' }}
@@ -211,7 +213,7 @@ function App({ isAdmin = false }: AppProps) {
                     </button>
                     <button
                       style={{ background: 'red', color: 'white' }}
-                      onClick={() => handleRemoverDoCarrinho(album.id)}
+                      onClick={() => handleRemoverDoCarrinho(album._id)}
                     >
                       APAGAR
                     </button>

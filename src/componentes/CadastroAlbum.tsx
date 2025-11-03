@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import './CadastroAlbum.css'
 import { Header } from '../componentes/Header'
+import api from '../api/api'
 
 function CadastroAlbum() {
   const [form, setForm] = useState({
@@ -21,36 +22,29 @@ function CadastroAlbum() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await fetch('http://localhost:8080/albuns', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          titulo: form.nome,
-          ano_lancamento: form.ano,
-          preco: form.preco,
-          genero: form.genero,
-          artista: form.artista
-        })
-      });
-
-      const dados = await response.json()
-
-      if (response.ok) {
+      api.post('/cadastro', {
+        titulo: form.nome,
+        ano_lancamento: form.ano,
+        preco: form.preco,
+        genero: form.genero,
+        artista: form.artista
+      }).then((response) => {
         setMensagem('✅ Álbum cadastrado com sucesso!');
         setForm({ nome: '', ano: '', preco: '', genero: '', artista: '' });
-      } else {
+      }).catch((error) => {
+        const dados = error.response.data;
         setMensagem(dados.mensagem || '❌ Erro ao cadastrar álbum.');
-      }
+      })
     } catch (error) {
-      setMensagem('❌ Erro ao conectar com o servidor.');
+      setMensagem('❌ Erro ao cadastrar álbum.');
     }
+
+
   }
 
   return (
     <div className="cadastro-wrapper">
-      <Header mostrarCadastro={true} onAdminClick={() => {}} />
+      <Header mostrarCadastro={true} onAdminClick={() => { }} />
 
       <div className="cadastro-container">
         <h2>Cadastro de Álbum</h2>
