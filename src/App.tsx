@@ -75,7 +75,7 @@ function App({ isAdmin = false }: AppProps) {
   // Remover do carrinho (função utilitária, pode ser usada em botões futuramente)
   const handleRemoverDoCarrinho = async (produtoId: string) => {
     try {
-      const resposta = await api.post('/removerItem', { produtoId })
+      const resposta = await api.post('/removerItem', { albunsId: produtoId })
       if (resposta.status === 200 || resposta.status === 204) {
         setMensagem('Item removido do carrinho com sucesso!')
         // Opcional: atualizar carrinho aqui
@@ -87,10 +87,16 @@ function App({ isAdmin = false }: AppProps) {
     }
   }
   async function adicionarCarrinho(albunsId: string) {
+    console.log('Adicionando ao carrinho, álbumId:', albunsId);
     try {
       // envia albunsId e quantidade; o backend recupera usuarioId do token
-      await api.post('/adicionarItem', { albunsId, quantidade: 1 });
-      setMensagem('Item adicionado ao carrinho');
+      const resp = await api.post('/adicionarItem', { albunsId, quantidade: 1 });
+      console.log('Resposta adicionarItem:', resp);
+      if (resp.status === 201 || resp.status === 200) {
+        setMensagem('Item adicionado ao carrinho');
+      } else {
+        setMensagem(resp.data?.mensagem || 'Item adicionado (resposta inesperada)');
+      }
 
       // Após adicionar, buscar o carrinho atualizado e emitir evento para atualizar componentes
       try {
@@ -99,11 +105,18 @@ function App({ isAdmin = false }: AppProps) {
 
         const token = localStorage.getItem('token');
         if (token) {
-          const res = await api.get(`/carrinho`);
-          const cart = res.data;
-          // Dispara evento customizado com os dados do carrinho
-          const evt = new CustomEvent('cartUpdated', { detail: cart });
-          window.dispatchEvent(evt);
+          // O endpoint retorna o carrinho atualizado quando adiciona; prefer usar isso quando disponível
+          const cart = resp.data;
+          if (cart) {
+            const evt = new CustomEvent('cartUpdated', { detail: cart });
+            window.dispatchEvent(evt);
+          } else {
+            // fallback: buscar o carrinho
+            const res = await api.get(`/carrinho`);
+            const cart2 = res.data;
+            const evt = new CustomEvent('cartUpdated', { detail: cart2 });
+            window.dispatchEvent(evt);
+          }
         }
       } catch (e) {
         // Não bloquear a UX principal se falhar ao buscar o carrinho
@@ -130,18 +143,18 @@ function App({ isAdmin = false }: AppProps) {
 
       <section className="artistas">
         <h2>🌟 Artistas</h2>
-        <div className="lista-artistas">
-          <div className="artista-card">
+         <div className="lista-artistas">
+          <div className="artista-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
             <img src="https://upload.wikimedia.org/wikipedia/pt/9/93/Kendrick_Lamar_-_GNX.png" alt="Kendrick Lamar" />
-            <span>Kendrick Lamar</span>
+            <span style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Kendrick Lamar</span>
           </div>
-          <div className="artista-card">
+          <div className="artista-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
             <img src="https://i.scdn.co/image/ab6761610000e5eb593f35db6f6837e1047a5e33" alt="LE SSERAFIM" />
-            <span>LE SSERAFIM</span>
+            <span style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>LE SSERAFIM</span>
           </div>
-          <div className="artista-card">
+          <div className="artista-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
             <img src="https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da845ed52ae23a0c2600ae34c9d5" alt="Veigh" />
-            <span>Veigh</span>
+            <span style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Veigh</span>
           </div>
         </div>
         <div className="ver-mais">
@@ -174,17 +187,42 @@ function App({ isAdmin = false }: AppProps) {
           <h2>✏️ Editar Álbum</h2>
           <form onSubmit={async e => {
             e.preventDefault()
+            
+            // Validação dos campos
+            if (!albumEditando.titulo || !albumEditando.artista || !albumEditando.preco || !albumEditando.ano_lancamento || !albumEditando.genero) {
+              setMensagem('Por favor, preencha todos os campos.');
+              return;
+            }
+
+            // Formatar os dados para envio
+            const albumData = {
+              titulo: albumEditando.titulo,
+              artista: albumEditando.artista,
+              preco: albumEditando.preco,
+              ano_lancamento: albumEditando.ano_lancamento,
+              genero: albumEditando.genero
+            };
+
             try {
-              await api.put<Album>(`/albuns/${albumEditando._id}`, albumEditando);
-              setMensagem('Álbum atualizado com sucesso!');
-              setAlbumEditando(null);
-              fetchAlbuns();
+              console.log('Enviando dados:', albumData); // Log para debug
+              const response = await api.put(`/admin/albuns/${albumEditando._id}`, albumData);
+              console.log('Resposta:', response); // Log para debug
+              
+              if (response.status === 200) {
+                setMensagem('Álbum atualizado com sucesso!');
+                setAlbumEditando(null);
+                fetchAlbuns();
+              } else {
+                setMensagem('Erro ao atualizar álbum: resposta inesperada do servidor');
+              }
             } catch (error) {
               console.error('Erro ao atualizar álbum:', error);
               const err = error as ApiError;
-              setMensagem(err.code === 'ERR_NETWORK' 
-                ? 'Erro de conexão com o servidor.'
-                : err.response?.data?.mensagem || 'Erro ao atualizar álbum.');
+              setMensagem(
+                err.code === 'ERR_NETWORK' 
+                  ? 'Erro de conexão com o servidor. Verifique se o servidor está rodando.'
+                  : err.response?.data?.mensagem || 'Erro ao atualizar álbum.'
+              );
             }
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -219,13 +257,6 @@ function App({ isAdmin = false }: AppProps) {
                 {!isAdmin && (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => adicionarCarrinho(album._id)}>Adicionar</button>
-                    {/* NOVO BOTÃO DE REMOVER: Você só mostraria este se o item estivesse no carrinho */}
-                    <button 
-                      style={{ background: 'darkred', color: 'white' }}
-                      onClick={() => handleRemoverDoCarrinho(album._id)}
-                    >
-                      REMOVER 
-                    </button>
                   </div>
                 )}
                 {isAdmin && (

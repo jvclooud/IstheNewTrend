@@ -45,6 +45,7 @@ export function Header({ mostrarCadastro, onAdminClick }: HeaderProps) {
         {mostrarCadastro && <a href="/cadastro">CADASTRO DE ÁLBUNS</a>}
       </nav>
       <div className="actions">
+        <button onClick={() => navigate('/carrinho')}>CARRINHO</button>
         <button>USUÁRIO</button>
         <button onClick={handleAdminClick}>ADMINISTRADOR</button>
       </div>

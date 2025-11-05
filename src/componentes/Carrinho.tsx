@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../api/api";
 import "./Carrinho.css";
+import { Header } from '../componentes/Header';
 
 
 interface ItemCarrinho {
@@ -29,7 +30,7 @@ export default function Carrinho() {
       return;
     }
 
-    api.post("/adicionarItem", { usuarioId, albumId, quantidade })
+    api.post("/adicionarItem", { albunsId: albumId, quantidade })
       .then((response) => {
         setCarrinho(response.data);
         setMensagem(null);
@@ -46,7 +47,7 @@ export default function Carrinho() {
       return;
     }
 
-    api.post("/removerItem", { usuarioId, albumId })
+    api.post("/removerItem", { albunsId: albumId })
       .then((response) => {
         setCarrinho(response.data);
         setMensagem(null);
@@ -95,8 +96,8 @@ export default function Carrinho() {
       
       setUsuarioId(tokenData.usuarioId);
       
-      // Busca o carrinho do usuário
-      api.get(`/carrinho/${tokenData.usuarioId}`)
+      // Busca o carrinho do usuário (rota usa o usuário do token no backend)
+      api.get(`/carrinho`)
         .then((response) => {
           console.log("Resposta da API:", response.data);
           setCarrinho(response.data);
@@ -161,10 +162,11 @@ export default function Carrinho() {
         window.clearTimeout(fallbackTimeout.current);
         fallbackTimeout.current = null;
       }
-      // agenda refetch em 1200ms caso cartUpdated não chegue
+        // agenda refetch em 1200ms caso cartUpdated não chegue
       fallbackTimeout.current = window.setTimeout(() => {
         if (!usuarioId) return;
-        api.get(`/carrinho/${usuarioId}`)
+        // rota backend usa req.usuarioId, então chamamos /carrinho sem parâmetro
+        api.get(`/carrinho`)
           .then((res) => {
             setCarrinho(res.data);
             setMensagem(null);
@@ -191,6 +193,8 @@ export default function Carrinho() {
 
   return (
     <div className="carrinho-container">
+<Header mostrarCadastro={true} onAdminClick={() => { }} />
+
       <h1>Carrinho de Compras</h1>
 
       <table className="carrinho-tabela">
