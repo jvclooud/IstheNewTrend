@@ -14,6 +14,7 @@ interface Album {
   preco: string;
   ano_lancamento: string;
   genero: string;
+  imagem_url?: string;
 }
 
 interface ApiError {
@@ -45,8 +46,8 @@ function App({ isAdmin = false }: AppProps) {
     } catch (error) {
       console.error('Erro ao buscar álbuns:', error);
       const err = error as ApiError;
-      setMensagem(err.code === 'ERR_NETWORK' 
-        ? 'Erro de conexão com o servidor.' 
+      setMensagem(err.code === 'ERR_NETWORK'
+        ? 'Erro de conexão com o servidor.'
         : err.response?.data?.mensagem || 'Erro ao buscar álbuns.');
       setProdutos([]);
     }
@@ -61,8 +62,8 @@ function App({ isAdmin = false }: AppProps) {
       })
       .catch((error: ApiError) => {
         console.error('Erro ao buscar álbuns:', error);
-        setMensagem(error.code === 'ERR_NETWORK' 
-          ? 'Erro de conexão com o servidor.' 
+        setMensagem(error.code === 'ERR_NETWORK'
+          ? 'Erro de conexão com o servidor.'
           : error.response?.data?.mensagem || 'Erro ao buscar álbuns.');
         setProdutos([]);
       });
@@ -134,7 +135,7 @@ function App({ isAdmin = false }: AppProps) {
   }
   return (
     <div style={{ width: '100%' }}>
-      <Header mostrarCadastro={isAdmin} onAdminClick={() => {}} />
+      <Header mostrarCadastro={isAdmin} onAdminClick={() => { }} />
       {mensagem && (
         <div className="mensagem-erro" style={{ color: 'red', margin: 16 }}>
           {mensagem}
@@ -143,7 +144,7 @@ function App({ isAdmin = false }: AppProps) {
 
       <section className="artistas">
         <h2>🌟 Artistas</h2>
-         <div className="lista-artistas">
+        <div className="lista-artistas">
           <div className="artista-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
             <img src="https://upload.wikimedia.org/wikipedia/pt/9/93/Kendrick_Lamar_-_GNX.png" alt="Kendrick Lamar" />
             <span style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Kendrick Lamar</span>
@@ -187,7 +188,7 @@ function App({ isAdmin = false }: AppProps) {
           <h2>✏️ Editar Álbum</h2>
           <form onSubmit={async e => {
             e.preventDefault()
-            
+
             // Validação dos campos
             if (!albumEditando.titulo || !albumEditando.artista || !albumEditando.preco || !albumEditando.ano_lancamento || !albumEditando.genero) {
               setMensagem('Por favor, preencha todos os campos.');
@@ -207,7 +208,7 @@ function App({ isAdmin = false }: AppProps) {
               console.log('Enviando dados:', albumData); // Log para debug
               const response = await api.put(`/admin/albuns/${albumEditando._id}`, albumData);
               console.log('Resposta:', response); // Log para debug
-              
+
               if (response.status === 200) {
                 setMensagem('Álbum atualizado com sucesso!');
                 setAlbumEditando(null);
@@ -219,7 +220,7 @@ function App({ isAdmin = false }: AppProps) {
               console.error('Erro ao atualizar álbum:', error);
               const err = error as ApiError;
               setMensagem(
-                err.code === 'ERR_NETWORK' 
+                err.code === 'ERR_NETWORK'
                   ? 'Erro de conexão com o servidor. Verifique se o servidor está rodando.'
                   : err.response?.data?.mensagem || 'Erro ao atualizar álbum.'
               );
@@ -248,27 +249,42 @@ function App({ isAdmin = false }: AppProps) {
           ) : (
             produtos.map((album, i) => (
               <div key={album._id || i} className="card-album">
-                <img src="/placeholder.jpg" alt="Capa do Álbum" />
-                <h3>{album.titulo}</h3>
-                <p><strong>Artista:</strong> {album.artista}</p>
-                <p><strong>Gênero:</strong> {album.genero}</p>
-                <p>R$ {Number(album.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                {/* Botões para o modo de compra */}
-                {!isAdmin && (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => adicionarCarrinho(album._id)}>Adicionar</button>
+                <div className="album-img">
+                  <img
+                    src={album.imagem_url || "/placeholder.jpg"}
+                    alt={`Capa do Álbum ${album.titulo}`}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.jpg";
+                    }}
+                  />
+                </div>
+
+                <div className="album-info">
+                  <h3 style={{ marginTop: '15px', marginBottom: '1px' }}>Beatiful Chaos</h3>
+                  <p style={{ marginTop: '1px', marginBottom: '5px' }}className="album-preco">
+                    R$ {Number(album.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </p>
+                  <div className="album-tags">
+                    <span>🎵 {album.artista}</span>
+                    <span>🎸 {album.genero}</span>
                   </div>
-                )}
-                {isAdmin && (
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                </div>
+
+                {!isAdmin ? (
+                  <button onClick={() => adicionarCarrinho(album._id)} className="btn-adicionar">
+                    Adicionar ao carrinho
+                  </button>
+                ) : (
+                  <div className="admin-btns">
                     <button
-                      style={{ background: 'orange', color: 'white' }}
+                      className="btn-editar"
                       onClick={() => setAlbumEditando(album)}
                     >
                       EDITAR
                     </button>
                     <button
-                      style={{ background: 'red', color: 'white' }}
+                      className="btn-apagar"
                       onClick={() => handleRemoverDoCarrinho(album._id)}
                     >
                       APAGAR

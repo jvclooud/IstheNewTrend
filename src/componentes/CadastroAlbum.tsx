@@ -10,7 +10,8 @@ function CadastroAlbum() {
     ano: '',
     preco: '',
     genero: '',
-    artista: ''
+    artista: '',
+    imagem_url: ''
   })
 
   const [mensagem, setMensagem] = useState<string | null>(null)
@@ -27,10 +28,11 @@ function CadastroAlbum() {
         ano_lancamento: form.ano,
         preco: form.preco,
         genero: form.genero,
-        artista: form.artista
-      }).then((response) => {
+        artista: form.artista,
+        imagem_url: form.imagem_url
+      }).then(() => {
         setMensagem('✅ Álbum cadastrado com sucesso!');
-        setForm({ nome: '', ano: '', preco: '', genero: '', artista: '' });
+        setForm({ nome: '', ano: '', preco: '', genero: '', artista: '', imagem_url: '' });
       }).catch((error) => {
         const dados = error.response.data;
         setMensagem(dados.mensagem || '❌ Erro ao cadastrar álbum.');
@@ -63,6 +65,15 @@ function CadastroAlbum() {
 
           <label>Artista</label>
           <input type="text" name="artista" value={form.artista} onChange={handleChange} required />
+
+          <label>URL da Imagem</label>
+          <input 
+            type="url" 
+            name="imagem_url" 
+            value={form.imagem_url} 
+            onChange={handleChange} 
+            placeholder="https://exemplo.com/imagem.jpg"
+          />
 
           <button type="submit">Cadastrar</button>
         </form>

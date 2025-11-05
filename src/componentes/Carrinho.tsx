@@ -30,7 +30,14 @@ export default function Carrinho() {
       return;
     }
 
-    api.post("/adicionarItem", { albunsId: albumId, quantidade })
+    // Se a nova quantidade for menor que 1, removemos o item
+    if (quantidade < 1) {
+      removerItem(albumId);
+      return;
+    }
+
+    // Usa o endpoint que define a quantidade absoluta
+    api.post("/atualizarQuantidade", { albunsId: albumId, quantidade })
       .then((response) => {
         setCarrinho(response.data);
         setMensagem(null);
@@ -62,11 +69,11 @@ export default function Carrinho() {
 
   useEffect(() => {
     setCarregando(true);
-    
+
     try {
       const token = localStorage.getItem("token");
       console.log("Token:", token);
-      
+
       if (!token) {
         // Redireciona para o login preservando a rota de destino
         window.location.href = `/login?mensagem=${encodeURIComponent('Você precisa estar logado para ver o carrinho')}&redirect=/carrinho`;
@@ -76,26 +83,26 @@ export default function Carrinho() {
       // Decodifica o token JWT para obter o ID do usuário
       const tokenParts = token.split(".");
       console.log("Token parts:", tokenParts);
-      
+
       if (tokenParts.length !== 3) {
         throw new Error("Token inválido");
       }
-      
+
       const tokenPayload = tokenParts[1];
       console.log("Token payload:", tokenPayload);
-      
+
       const decodedData = atob(tokenPayload);
       console.log("Decoded data:", decodedData);
-      
+
       const tokenData = JSON.parse(decodedData);
       console.log("Token data:", tokenData);
-      
+
       if (!tokenData.usuarioId) {
         throw new Error("Token não contém ID do usuário");
       }
-      
+
       setUsuarioId(tokenData.usuarioId);
-      
+
       // Busca o carrinho do usuário (rota usa o usuário do token no backend)
       api.get(`/carrinho`)
         .then((response) => {
@@ -114,7 +121,7 @@ export default function Carrinho() {
         .finally(() => {
           setCarregando(false);
         });
-        
+
     } catch (error) {
       console.error("Erro ao processar token:", error);
       setMensagem("Erro ao verificar autenticação. Por favor, faça login novamente.");
@@ -162,7 +169,7 @@ export default function Carrinho() {
         window.clearTimeout(fallbackTimeout.current);
         fallbackTimeout.current = null;
       }
-        // agenda refetch em 1200ms caso cartUpdated não chegue
+      // agenda refetch em 1200ms caso cartUpdated não chegue
       fallbackTimeout.current = window.setTimeout(() => {
         if (!usuarioId) return;
         // rota backend usa req.usuarioId, então chamamos /carrinho sem parâmetro
@@ -192,58 +199,87 @@ export default function Carrinho() {
     return <div className="carrinho-vazio">Seu carrinho está vazio 🛒</div>;
 
   return (
-    <div className="carrinho-container">
-<Header mostrarCadastro={true} onAdminClick={() => { }} />
+    <>
+      <Header mostrarCadastro={true} onAdminClick={() => { }} />
 
-      <h1>Carrinho de Compras</h1>
+      <div className="carrinho-page">
+        <div className="carrinho-content">
+          {/* Lado esquerdo - Lista de itens */}
+          <section className="carrinho-itens">
+            <div className="carrinho-top">
+              <h1>Shopping Cart</h1>
+              <span>{carrinho.itens.length} items</span>
+            </div>
 
-      <table className="carrinho-tabela">
-        <thead>
-          <tr>
-            <th>Álbum</th>
-            <th>Preço</th>
-            <th>Quantidade</th>
-            <th>Subtotal</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {carrinho.itens.map((item) => (
-            <tr key={item.albunsId}>
-              <td>{item.nome}</td>
-              <td>R$ {item.precoUnitario.toFixed(2)}</td>
-              <td>
-                <input
-                  type="number"
-                  min={1}
-                  value={item.quantidade}
-                  onChange={(e) =>
-                    atualizarQuantidade(item.albunsId, Number(e.target.value))
-                  }
+            {carrinho.itens.map((item) => (
+              <div key={item.albunsId} className="carrinho-item">
+                <img
+                  src="/placeholder-album.png"
+                  alt={item.nome}
+                  className="item-imagem"
                 />
-              </td>
-              <td>
-                R$ {(item.precoUnitario * item.quantidade).toFixed(2)}
-              </td>
-              <td>
+                <div className="item-info">
+                  <p className="item-nome">{item.nome}</p>
+                  <p className="item-descricao">Álbum musical</p>
+                </div>
+
+                <div className="item-quantidade">
+                  <button onClick={() => atualizarQuantidade(item.albunsId, item.quantidade - 1)}>-</button>
+                  <span>{item.quantidade}</span>
+                  <button onClick={() => atualizarQuantidade(item.albunsId, item.quantidade + 1)}>+</button>
+                </div>
+
+                <div className="item-preco">
+                  R$ {(item.precoUnitario * item.quantidade).toFixed(2)}
+                </div>
+
                 <button
-                  className="btn-remover"
+                  className="item-remover"
                   onClick={() => removerItem(item.albunsId)}
                 >
-                  Remover
+                  ×
                 </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            ))}
 
-      <div className="carrinho-total">
-        <span>Total:</span>
-        <strong>R$ {carrinho.total.toFixed(2)}</strong>
+            <a href="/" className="voltar-loja">← Voltar à loja</a>
+          </section>
+
+          {/* Lado direito - Resumo */}
+          <aside className="carrinho-resumo">
+            <h2>Resumo</h2>
+
+            <div className="resumo-linha">
+              <span>Itens ({carrinho.itens.length})</span>
+              <span>R$ {carrinho.total.toFixed(2)}</span>
+            </div>
+
+            <div className="resumo-linha">
+              <span>Frete</span>
+              <select>
+                <option>Padrão - R$ 10,00</option>
+                <option>Expresso - R$ 25,00</option>
+              </select>
+            </div>
+
+            <div className="resumo-linha">
+              <span>Cupom</span>
+              <div className="cupom">
+                <input type="text" placeholder="Digite seu código" />
+                <button>→</button>
+              </div>
+            </div>
+
+            <div className="resumo-total">
+              <span>Total</span>
+              <strong>R$ {(carrinho.total + 10).toFixed(2)}</strong>
+            </div>
+
+            <button className="btn-checkout">Finalizar Compra</button>
+          </aside>
+        </div>
       </div>
+    </>
 
-      <button className="btn-finalizar">Finalizar Compra</button>
-    </div>
   );
 }
