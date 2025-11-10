@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import api from './api/api'
-import { Header } from './componentes/Header.tsx'
+import Header from './componentes/Header'
 
-interface AppProps {
-  isAdmin?: boolean;
-}
+// Definindo a tipagem para o papel do usuário
+type UserRole = 'admin' | 'user' | null;
+
 
 interface Album {
   _id: string;
@@ -26,12 +26,48 @@ interface ApiError {
   };
 }
 
-function App({ isAdmin = false }: AppProps) {
+// Remover AppProps, pois não usaremos mais a prop isAdmin
+function App() {
+  // 1. NOVO ESTADO: Ler o role do localStorage na inicialização
+  const [userRole, setUserRole] = useState<UserRole>(() => {
+    const role = localStorage.getItem('role');
+    // Verifica se o role é válido
+    if (role === 'admin' || role === 'user') {
+      return role as UserRole;
+    }
+    return null;
+  });
+
   const [produtos, setProdutos] = useState<Album[]>([])
   const [mensagem, setMensagem] = useState<string | null>(null)
   const [campoFiltro, setCampoFiltro] = useState('titulo')
   const [valorFiltro, setValorFiltro] = useState('')
   const [albumEditando, setAlbumEditando] = useState<Album | null>(null)
+
+  // Monitora mudanças no token/role para atualizar o estado de login
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const role = localStorage.getItem('role');
+      if (role === 'admin' || role === 'user') {
+        setUserRole(role as UserRole);
+      } else {
+        setUserRole(null);
+      }
+    };
+
+    // Você pode usar o evento 'storage' para monitorar mudanças
+    window.addEventListener('storage', handleStorageChange);
+    // Também pode adicionar um listener para o custom event do logout
+    window.addEventListener('logout', handleStorageChange);
+
+    handleStorageChange(); // Chama uma vez ao montar
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('logout', handleStorageChange);
+    };
+  }, []);
+
 
   const buscarComFiltro = async () => {
     if (!valorFiltro.trim()) {
@@ -76,17 +112,20 @@ function App({ isAdmin = false }: AppProps) {
   // Remover do carrinho (função utilitária, pode ser usada em botões futuramente)
   const handleRemoverDoCarrinho = async (produtoId: string) => {
     try {
-      const resposta = await api.post('/removerItem', { albunsId: produtoId })
+      // NOTE: Esta função agora está sendo usada para APAGAR álbuns (somente admin)
+      // O endpoint correto para admin deve ser /admin/albuns/:id com método DELETE
+      const resposta = await api.delete(`/admin/albuns/${produtoId}`) // Corrigido para DELETE e rota admin
       if (resposta.status === 200 || resposta.status === 204) {
-        setMensagem('Item removido do carrinho com sucesso!')
-        // Opcional: atualizar carrinho aqui
+        setMensagem('Álbum removido do estoque com sucesso!')
+        fetchAlbuns(); // Atualiza a lista
       } else {
-        setMensagem(resposta.data.mensagem || 'Erro ao remover item do carrinho.')
+        setMensagem(resposta.data.mensagem || 'Erro ao remover álbum.')
       }
     } catch (erro) {
-      setMensagem('Erro de conexão ou ao remover item do carrinho.')
+      setMensagem('Erro de conexão ou ao remover álbum.')
     }
   }
+
   async function adicionarCarrinho(albunsId: string) {
     console.log('Adicionando ao carrinho, álbumId:', albunsId);
     try {
@@ -94,25 +133,21 @@ function App({ isAdmin = false }: AppProps) {
       const resp = await api.post('/adicionarItem', { albunsId, quantidade: 1 });
       console.log('Resposta adicionarItem:', resp);
       if (resp.status === 201 || resp.status === 200) {
-        setMensagem('Item adicionado ao carrinho');
+        setMensagem('Item adicionado ao carrinho!');
       } else {
         setMensagem(resp.data?.mensagem || 'Item adicionado (resposta inesperada)');
       }
 
-      // Após adicionar, buscar o carrinho atualizado e emitir evento para atualizar componentes
+      // Lógica para atualizar o carrinho em outros componentes (via evento)
       try {
-        // Dispara evento indicando tentativa de adicionar ao carrinho (fallback listener pode reagir)
         window.dispatchEvent(new CustomEvent('cartAddAttempt'));
-
         const token = localStorage.getItem('token');
         if (token) {
-          // O endpoint retorna o carrinho atualizado quando adiciona; prefer usar isso quando disponível
           const cart = resp.data;
           if (cart) {
             const evt = new CustomEvent('cartUpdated', { detail: cart });
             window.dispatchEvent(evt);
           } else {
-            // fallback: buscar o carrinho
             const res = await api.get(`/carrinho`);
             const cart2 = res.data;
             const evt = new CustomEvent('cartUpdated', { detail: cart2 });
@@ -120,7 +155,6 @@ function App({ isAdmin = false }: AppProps) {
           }
         }
       } catch (e) {
-        // Não bloquear a UX principal se falhar ao buscar o carrinho
         console.warn('Não foi possível atualizar o carrinho em tempo real', e);
       }
     } catch (err) {
@@ -133,9 +167,19 @@ function App({ isAdmin = false }: AppProps) {
       );
     }
   }
+
+  const isAdmin = userRole === 'admin'; // Variável auxiliar
+  const isUser = userRole === 'user'; // Variável auxiliar
+  const isLoggedIn = userRole !== null; // Variável auxiliar
+
   return (
     <div style={{ width: '100%' }}>
-      <Header mostrarCadastro={isAdmin} onAdminClick={() => { }} />
+      <Header
+        mostrarCadastro={isAdmin}
+        onAdminClick={() => { /* Lógica de redirecionamento, se necessário */ }}
+        userRole={userRole}
+      />
+
       {mensagem && (
         <div className="mensagem-erro" style={{ color: 'red', margin: 16 }}>
           {mensagem}
@@ -189,12 +233,17 @@ function App({ isAdmin = false }: AppProps) {
           <form onSubmit={async e => {
             e.preventDefault()
 
+            // CORREÇÃO: Verificação explícita de nulidade para o TypeScript
+            if (!albumEditando) {
+              setMensagem('Erro interno: Álbum não está definido para edição.');
+              return;
+            }
+
             // Validação dos campos
             if (!albumEditando.titulo || !albumEditando.artista || !albumEditando.preco || !albumEditando.ano_lancamento || !albumEditando.genero) {
               setMensagem('Por favor, preencha todos os campos.');
               return;
             }
-
             // Formatar os dados para envio
             const albumData = {
               titulo: albumEditando.titulo,
@@ -203,12 +252,10 @@ function App({ isAdmin = false }: AppProps) {
               ano_lancamento: albumEditando.ano_lancamento,
               genero: albumEditando.genero
             };
-
             try {
               console.log('Enviando dados:', albumData); // Log para debug
               const response = await api.put(`/admin/albuns/${albumEditando._id}`, albumData);
               console.log('Resposta:', response); // Log para debug
-
               if (response.status === 200) {
                 setMensagem('Álbum atualizado com sucesso!');
                 setAlbumEditando(null);
@@ -227,11 +274,11 @@ function App({ isAdmin = false }: AppProps) {
             }
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <input type="text" value={albumEditando.titulo} onChange={e => setAlbumEditando({ ...albumEditando, titulo: e.target.value })} placeholder="Título" />
-              <input type="text" value={albumEditando.artista} onChange={e => setAlbumEditando({ ...albumEditando, artista: e.target.value })} placeholder="Artista" />
-              <input type="number" value={albumEditando.preco} onChange={e => setAlbumEditando({ ...albumEditando, preco: e.target.value })} placeholder="Preço" />
-              <input type="number" value={albumEditando.ano_lancamento} onChange={e => setAlbumEditando({ ...albumEditando, ano_lancamento: e.target.value })} placeholder="Ano de lançamento" />
-              <input type="text" value={albumEditando.genero} onChange={e => setAlbumEditando({ ...albumEditando, genero: e.target.value })} placeholder="Gênero" />
+              <input type="text" value={albumEditando.titulo} onChange={e => setAlbumEditando({ ...albumEditando!, titulo: e.target.value })} placeholder="Título" />
+              <input type="text" value={albumEditando.artista} onChange={e => setAlbumEditando({ ...albumEditando!, artista: e.target.value })} placeholder="Artista" />
+              <input type="number" value={albumEditando.preco} onChange={e => setAlbumEditando({ ...albumEditando!, preco: e.target.value })} placeholder="Preço" />
+              <input type="number" value={albumEditando.ano_lancamento} onChange={e => setAlbumEditando({ ...albumEditando!, ano_lancamento: e.target.value })} placeholder="Ano de lançamento" />
+              <input type="text" value={albumEditando.genero} onChange={e => setAlbumEditando({ ...albumEditando!, genero: e.target.value })} placeholder="Gênero" />
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button type="submit">Salvar</button>
                 <button type="button" onClick={() => setAlbumEditando(null)}>Cancelar</button>
@@ -240,6 +287,7 @@ function App({ isAdmin = false }: AppProps) {
           </form>
         </section>
       )}
+
 
       <section className="shop">
         <h2>Shop</h2>
@@ -262,7 +310,7 @@ function App({ isAdmin = false }: AppProps) {
 
                 <div className="album-info">
                   <h3 style={{ marginTop: '15px', marginBottom: '1px' }}>Beatiful Chaos</h3>
-                  <p style={{ marginTop: '1px', marginBottom: '5px' }}className="album-preco">
+                  <p style={{ marginTop: '1px', marginBottom: '5px' }} className="album-preco">
                     R$ {Number(album.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </p>
                   <div className="album-tags">
@@ -271,26 +319,27 @@ function App({ isAdmin = false }: AppProps) {
                   </div>
                 </div>
 
-                {!isAdmin ? (
-                  <button onClick={() => adicionarCarrinho(album._id)} className="btn-adicionar">
-                    Adicionar ao carrinho
-                  </button>
-                ) : (
-                  <div className="admin-btns">
-                    <button
-                      className="btn-editar"
-                      onClick={() => setAlbumEditando(album)}
-                    >
-                      EDITAR
+                {!isLoggedIn ? null : // Se não estiver logado, não mostra nada
+                  isUser ? ( // Se for um usuário regular, mostra Adicionar ao Carrinho
+                    <button onClick={() => adicionarCarrinho(album._id)} className="btn-adicionar">
+                      Adicionar ao carrinho
                     </button>
-                    <button
-                      className="btn-apagar"
-                      onClick={() => handleRemoverDoCarrinho(album._id)}
-                    >
-                      APAGAR
-                    </button>
-                  </div>
-                )}
+                  ) : isAdmin ? ( // Se for admin, mostra botões de edição
+                    <div className="admin-btns">
+                      <button
+                        className="btn-editar"
+                        onClick={() => setAlbumEditando(album)}
+                      >
+                        EDITAR
+                      </button>
+                      <button
+                        className="btn-apagar"
+                        onClick={() => handleRemoverDoCarrinho(album._id)}
+                      >
+                        APAGAR
+                      </button>
+                    </div>
+                  ) : null}
               </div>
             ))
           )}
