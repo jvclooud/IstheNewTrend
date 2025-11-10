@@ -1,56 +1,157 @@
+/* Cores do Redesign */
+:root {
+  --primary-color: #5d5dff;
+  /* Azul/Roxo principal */
+  --highlight-color: #00d4ff;
+  /* Ciano para gradiente */
+  --text-color: #333;
+  --bg-color: #f8f8f8;
+  --error-color: #ff4d4d;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #ddd;
+  /* Reduzir o padding para um visual mais compacto */
+  padding: 1rem 3rem;
   background-color: #fff;
+  /* Borda inferior mais fina ou removida, dependendo do background da página */
+  border-bottom: 1px solid var(--bg-color);
+  /* Adiciona uma sombra sutil para destacar o header da página */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.logo {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #0b0b0b;
+/* Estilo para a Logo (Container) */
+.logo-container {
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
 }
 
+.logo-image {
+  /* O tamanho da imagem de logo deve ser ajustado para o visual */
+  height: 10px;
+}
+
+/* Estilo para a Navegação */
 .nav {
   display: flex;
-  gap: 1.2rem;
+  gap: 2rem;
+  /* Aumentar o espaçamento */
   align-items: center;
 }
 
-.nav a {
+.nav-link {
   text-decoration: none;
-  color: #0b0b0b;
-  font-weight: 600;
-  font-size: 0.95rem;
+  color: var(--text-color);
+  font-weight: 500;
+  /* Mudar para menos bold para os links de nav */
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  /* Linha abaixo é redundante no componente, mas mantida por garantia */
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
+.nav-link:hover {
+  color: var(--primary-color);
+}
+
+/* Estilo para o Separador ( | ) na navegação */
+.nav-separator {
+  color: #ccc;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* Estilo para as Ações (Botões/Ícones) */
 .actions {
   display: flex;
-  gap: 0.6rem;
+  gap: 1.5rem;
+  /* Espaçamento entre as ações */
+  align-items: center;
 }
 
-.actions button {
-  padding: 0.5rem 1.2rem;
+/* Estilo para botões de ícone (Carrinho e Perfil) */
+.icon-action {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  /* Cor do ícone base, mudei de primary para text para ser menos agressivo */
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  /* Garantir alinhamento vertical */
+  transition: color 0.2s;
+}
+
+.icon-action:hover {
+  color: var(--primary-color);
+}
+
+/* Botão de LOGIN com gradiente */
+.btn-login {
+  padding: 0.6rem 1.5rem;
   border: none;
   border-radius: 999px;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: 0.3s;
+  transition: transform 0.2s;
+  color: white;
+  /* Texto branco para o gradiente */
+
+  /* Gradiente Azul/Ciano */
+  background: linear-gradient(90deg, var(--highlight-color) 0%, var(--primary-color) 100%);
+  box-shadow: 0 4px 10px rgba(0, 212, 255, 0.3);
 }
 
-.actions button:first-child {
-  background-color: #e6f1ff;
-  color: #0b0b0b;
+.btn-login:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 212, 255, 0.4);
 }
 
-.actions button:last-child {
-  background-color: #d4e9ff;
-  color: #0b0b0b;
+/* Estilos para a Área do Usuário (Logado) */
+.user-area {
+  display: flex;
+  align-items: center;
 }
 
-.actions button:hover {
-  background-color: #ccc;
+.user-button {
+  /* Estilo para o botão que contém o ícone e o status */
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+}
+
+.user-button:hover .user-status {
+  color: var(--primary-color);
+}
+
+.user-status {
+  /* Estilo base para o texto de status */
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+/* Status Badge - Específico para Admin e Usuário */
+.admin-badge {
+  color: var(--error-color);
+  /* Cor de destaque para o Admin (vermelho/laranja) */
+  text-transform: uppercase;
+}
+
+.user-badge {
+  color: var(--text-color);
+  /* Cor padrão para Usuário */
+  text-transform: uppercase;
 }
