@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom"; // Importe o Link
 import api from "../../api/api";
 import "./login.css";
 
@@ -41,14 +41,32 @@ function Login() {
   }
 
   return (
-    <div className="login-container">
-      <h1 className="login-title">Login</h1>
-      <form className="login-form" onSubmit={handleSubmit}>
-        <input type="text" name="email" placeholder="Email" className="login-input" />
-        <input type="password" name="senha" placeholder="Senha" className="login-input" />
-        <button type="submit" className="login-button">Entrar</button>
-      </form>
-      {mensagem && <p className="login-message">{mensagem}</p>}
+    <div className="login-page"> {/* // Mudança de classe para a página inteira */}
+      <div className="login-container">
+        {/* NOME DO SITE ADICIONADO AQUI */}
+        <h1 className="login-brand">New Trend</h1>
+        <h2 className="login-title">Acesse sua conta</h2>
+
+        {/* MENSAGEM DE ERRO MOVINA PARA CIMA DO FORM */}
+        {mensagem && <p className="login-message">{mensagem}</p>}
+
+        <form className="login-form" onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label htmlFor="email">Email</label>
+            <input type="text" id="email" name="email" placeholder="seuemail@exemplo.com" className="login-input" />
+          </div>
+          <div className="input-group">
+            <label htmlFor="senha">Senha</label>
+            <input type="password" id="senha" name="senha" placeholder="Sua senha" className="login-input" />
+          </div>
+          <button type="submit" className="login-button">Entrar</button>
+        </form>
+
+        {/* LINK DE CADASTRO ADICIONADO */}
+        <p className="login-signup-link">
+          Não tem uma conta? <Link to="/cadastro">Cadastre-se</Link>
+        </p>
+      </div>
     </div>
   );
 }
