@@ -110,11 +110,11 @@ function App() {
   }, [])
 
   // Remover do carrinho (função utilitária, pode ser usada em botões futuramente)
-  const handleRemoverDoCarrinho = async (produtoId: string) => {
+  const handleRemoverDoCarrinho = async (albunsId: string) => {
     try {
       // NOTE: Esta função agora está sendo usada para APAGAR álbuns (somente admin)
       // O endpoint correto para admin deve ser /admin/albuns/:id com método DELETE
-      const resposta = await api.delete(`/admin/albuns/${produtoId}`) // Corrigido para DELETE e rota admin
+      const resposta = await api.delete(`/albuns/${albunsId}`) // Corrigido para DELETE e rota admin
       if (resposta.status === 200 || resposta.status === 204) {
         setMensagem('Álbum removido do estoque com sucesso!')
         fetchAlbuns(); // Atualiza a lista
