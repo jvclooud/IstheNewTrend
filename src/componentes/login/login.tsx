@@ -1,6 +1,8 @@
 import { useNavigate, useSearchParams, Link } from "react-router-dom"; // Importe o Link
 import api from "../../api/api";
 import "./login.css";
+// >>> 1. Importação da imagem: O caminho é relativo de src/componentes/login para src/assets/imagens
+import logo from "../../assets/imagens/logo.png"; 
 
 function Login() {
   const navigate = useNavigate();
@@ -43,8 +45,12 @@ function Login() {
   return (
     <div className="login-page"> {/* // Mudança de classe para a página inteira */}
       <div className="login-container">
-        {/* NOME DO SITE ADICIONADO AQUI */}
-        <h1 className="login-brand">New Trend</h1>
+        {/* 2. Substituição do h1 pela tag img usando a imagem importada */}
+        <img 
+          src={logo} 
+          alt="Logo New Trend" 
+          className="login-brand-image" // Nova classe para estilizar a logo
+        />
         <h2 className="login-title">Acesse sua conta</h2>
 
         {/* MENSAGEM DE ERRO MOVINA PARA CIMA DO FORM */}

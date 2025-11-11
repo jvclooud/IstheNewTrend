@@ -1,132 +1,146 @@
-body, html {
-  margin: 0;
-  padding: 0;
-  font-family: '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  background-color: #F8F9FA;
-  color: #212529;
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #F8F9FA;
+    color: #212529;
 }
 
 .login-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .login-container {
-  background-color: #FFFFFF;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
+    background-color: #FFFFFF;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Novo estilo para a imagem da logo */
+.login-brand-image {
+    width: 150px; 
+    height: auto; 
+    margin: 0 auto 1.5rem auto;
+    display: block;
 }
 
 .login-brand {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #7B2CBF;
-  margin: 0 0 0.5rem 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    /* Cor da marca atualizada para o azul da logo */
+    color: #1A3769; 
+    margin: 0 0 0.5rem 0;
 }
 
 .login-title {
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: #495057;
-  margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #495057;
+    margin-bottom: 2rem;
 }
 
 .login-message {
-  background-color: #F8D7DA; 
-  color: #721C24; 
-  border: 1px solid #F5C6CB;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
+    background-color: #b3c3df; /* Mantido em vermelho claro para erro */
+    color: #0a1d3f;
+    border: 1px solid #b3c3df;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
 }
 
 .login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem; 
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .input-group {
-  text-align: left; 
+    text-align: left;
 }
 
 .input-group label {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #212529;
-  margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.5rem;
 }
 
 .login-input {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #CED4DA; 
-  border-radius: 8px;
-  font-size: 1rem;
-  box-sizing: border-box; 
-  transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #CED4DA;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .login-input:focus {
-  outline: none;
-  border-color: #7B2CBF;
-  box-shadow: 0 0 0 3px rgba(123, 44, 191, 0.2);
+    outline: none;
+    /* Borda de foco atualizada para o azul da logo */
+    border-color: #1A3769; 
+    box-shadow: 0 0 0 3px rgba(26, 55, 105, 0.2); /* Sombra de foco com transparência do azul */
 }
 
 .login-button {
-  width: 100%;
-  padding: 14px;
-  background-color: #7B2CBF; 
-  color: white; 
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  transition: background-color 0.2s ease-in-out;
+    width: 100%;
+    padding: 14px;
+    /* Fundo do botão atualizado para o azul da logo */
+    background-color: #1A3769; 
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s ease-in-out;
 }
 
 .login-button:hover {
-  background-color: #5E0DAC; 
+    /* Cor de hover levemente mais escura para o botão */
+    background-color: #132749; 
 }
 
 .login-signup-link {
-  margin-top: 1.5rem;
-  font-size: 0.9rem;
-  color: #495057; 
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #495057;
 }
 
 .login-signup-link a {
-  color: #7B2CBF; 
-  font-weight: 600;
-  text-decoration: none;
+    /* Cor do link de cadastro atualizada para o azul da logo */
+    color: #1A3769; 
+    font-weight: 600;
+    text-decoration: none;
 }
 
 .login-signup-link a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 @media (max-width: 450px) {
-  .login-container {
-    padding: 1.5rem;
-  }
+    .login-container {
+        padding: 1.5rem;
+    }
 
-  .login-brand {
-    font-size: 2rem;
-  }
+    .login-brand-image {
+        width: 120px;
+    }
 
-  .login-title {
-    font-size: 1.25rem;
-  }
+    .login-title {
+        font-size: 1.25rem;
+    }
 }

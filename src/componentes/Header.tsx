@@ -13,7 +13,7 @@ type UserRole = 'admin' | 'user' | null;
 interface HeaderProps {
   mostrarCadastro?: boolean;
   onAdminClick: () => void;
-  userRole: UserRole;
+  userRole?: UserRole;
 }
 
 export default function Header({ mostrarCadastro = false, userRole }: HeaderProps) {
