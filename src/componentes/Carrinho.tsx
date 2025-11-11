@@ -32,6 +32,7 @@ export default function Carrinho() {
 
     // Se a nova quantidade for menor que 1, removemos o item
     if (quantidade < 1) {
+      // Chama a função 'removerItem' (definida abaixo) se a quantidade for zero ou negativa
       removerItem(albumId);
       return;
     }
@@ -48,19 +49,25 @@ export default function Carrinho() {
       });
   };
 
+  // Define a função 'removerItem' que será chamada para excluir um item do carrinho
   const removerItem = (albumId: string) => {
     if (!usuarioId) {
+      // Define uma mensagem de erro se o usuário tentar remover algo sem estar logado
       setMensagem("Você precisa estar logado para remover itens do carrinho");
       return;
     }
 
+    // Envia uma requisição POST para o backend, para o endpoint "/removerItem", passando o ID do álbum
     api.post("/removerItem", { albunsId: albumId })
       .then((response) => {
+        // Se a API responder com sucesso, atualiza o estado do 'carrinho' com os novos dados (sem o item removido)
         setCarrinho(response.data);
-        setMensagem(null);
+        setMensagem(null); // Limpa qualquer mensagem de erro
       })
       .catch((error) => {
+        // Em caso de erro, exibe o erro no console
         console.error("Erro ao remover item:", error);
+        // E define uma mensagem de erro para o usuário
         setMensagem("Erro ao remover o item do carrinho.");
       });
   };
@@ -92,7 +99,7 @@ export default function Carrinho() {
       console.log("Token payload:", tokenPayload);
 
       const decodedData = atob(tokenPayload);
-      console.log("Decoded data:", decodedData);
+console.log("Decoded data:", decodedData);
 
       const tokenData = JSON.parse(decodedData);
       console.log("Token data:", tokenData);
@@ -129,6 +136,7 @@ export default function Carrinho() {
     }
 
     // NOTE: a primeira busca do carrinho já foi feita acima (usando tokenData.usuarioId).
+    // Comentário original: Indica que um código duplicado/desnecessário foi removido
     // Removido fetch duplicado que usava o estado `usuarioId` ainda não inicializado.
   }, []);
 
@@ -158,6 +166,7 @@ export default function Carrinho() {
     };
 
     window.addEventListener('cartUpdated', handler as EventListener);
+    // Função de limpeza do useEffect: Remove o 'ouvinte' (listener) quando o componente for desmontado
     return () => window.removeEventListener('cartUpdated', handler as EventListener);
   }, []);
 
@@ -189,6 +198,7 @@ export default function Carrinho() {
     };
 
     window.addEventListener('cartAddAttempt', attemptHandler as EventListener);
+    // Função de limpeza: Garante que o 'ouvinte' (listener) do 'cartAddAttempt' seja removido
     return () => window.removeEventListener('cartAddAttempt', attemptHandler as EventListener);
   }, [usuarioId]);
 
@@ -237,7 +247,9 @@ export default function Carrinho() {
                 </div>
 
                 <button
+                  // Define a classe CSS para o botão de remoção (geralmente um 'X' ou lixeira)
                   className="item-remover"
+                  // Ao clicar no botão, chama a função 'removerItem' passando o ID deste item específico
                   onClick={() => removerItem(item.albunsId)}
                 >
                   ×

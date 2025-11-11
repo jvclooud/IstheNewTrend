@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/api';
 // Importe ícones para melhor UX
 import { FaSignOutAlt, FaHistory, FaUser, FaLock } from 'react-icons/fa';
 
