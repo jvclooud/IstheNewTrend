@@ -11,6 +11,7 @@ import ProtectedAdminRoute from './componentes/ProtectedAdminRoute.tsx'
 // NOVO: Assumindo que você terá um ProtectedUserRoute (ou usar o ProtectedAdminRoute adaptado)
 import ProtectedUserRoute from './componentes/ProtectedUserRoute.tsx'
 import UserArea from './componentes/UserArea.tsx' // Componente para a área de usuário
+import AdminArea from './componentes/AdminArea.tsx' // Nova área do administrador
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,13 +19,22 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<App />} />
 
-        {/* 1. ROTA ADMIN: Protegida, usando o App como componente de exibição principal */}
+        {/* 1. ROTA ADMIN: Protegida, renderiza a App (funcionalidade antiga de admin) */}
         <Route
           path="/admin"
           element={
             <ProtectedAdminRoute>
-              {/* CORRIGIDO: App é renderizado SEM props */}
               <App />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        {/* 1b. ROTA ADMIN PERFIL: Protegida, renderiza a AdminArea (área do administrador com logout) */}
+        <Route
+          path="/adminperfil"
+          element={
+            <ProtectedAdminRoute>
+              <AdminArea />
             </ProtectedAdminRoute>
           }
         />

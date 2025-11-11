@@ -9,10 +9,9 @@ import {
 
 // Tipagem para o estado do usuário
 type UserRole = 'admin' | 'user' | null;
-
 interface HeaderProps {
   mostrarCadastro?: boolean;
-  onAdminClick: () => void;
+  onAdminClick?: () => void;
   userRole?: UserRole;
 }
 
@@ -24,7 +23,7 @@ export default function Header({ mostrarCadastro = false, userRole }: HeaderProp
   const handleUserClick = () => {
     // Lógica para quando o usuário logado clica no ícone/status
     if (isAdmin) {
-      navigate('/admin'); // Leva o admin para a área de admin
+      navigate('/adminperfil'); // Leva o admin para a área de admin (rota /adminperfil)
     } else if (userRole === 'user') {
       navigate('/user'); // Leva o usuário regular para a área de usuário
     }

@@ -198,9 +198,12 @@ export default function Carrinho() {
   if (!carrinho || carrinho.itens.length === 0)
     return <div className="carrinho-vazio">Seu carrinho está vazio 🛒</div>;
 
+  // Obtém o role do localStorage para passar ao Header
+  const role = localStorage.getItem('role') as 'admin' | 'user' | null;
+
   return (
     <>
-      <Header mostrarCadastro={true} onAdminClick={() => { }} />
+      <Header mostrarCadastro={true} userRole={role} />
 
       <div className="carrinho-page">
         <div className="carrinho-content">
