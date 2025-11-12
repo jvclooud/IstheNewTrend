@@ -309,7 +309,7 @@ function App() {
                 </div>
 
                 <div className="album-info">
-                  <h3 style={{ marginTop: '15px', marginBottom: '1px' }}>Beatiful Chaos</h3>
+                  <h3 style={{ marginTop: '15px', marginBottom: '1px' }}>{album.titulo}</h3>
                   <p style={{ marginTop: '1px', marginBottom: '5px' }} className="album-preco">
                     R$ {Number(album.preco).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </p>
