@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 import api from "../api/api";
 import "./Carrinho.css";
 import { Header } from '../componentes/Header';
@@ -21,8 +22,10 @@ export default function Carrinho() {
   const [carrinho, setCarrinho] = useState<Carrinho | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState<string | null>(null);
+  const [pagarCarregando, setPagarCarregando] = useState(false);
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
   const fallbackTimeout = useRef<number | null>(null);
+  const navigate = useNavigate();
 
   const atualizarQuantidade = (albumId: string, quantidade: number) => {
     if (!usuarioId) {
@@ -82,8 +85,8 @@ export default function Carrinho() {
       console.log("Token:", token);
 
       if (!token) {
-        // Redireciona para o login preservando a rota de destino
-        window.location.href = `/login?mensagem=${encodeURIComponent('Você precisa estar logado para ver o carrinho')}&redirect=/carrinho`;
+        // Redireciona para o login preservando a rota de destino (usando navegação SPA)
+        navigate(`/login?mensagem=${encodeURIComponent('Você precisa estar logado para ver o carrinho')}&redirect=/carrinho`);
         return;
       }
 
@@ -211,6 +214,58 @@ console.log("Decoded data:", decodedData);
   // Obtém o role do localStorage para passar ao Header
   const role = localStorage.getItem('role') as 'admin' | 'user' | null;
 
+  // Finaliza compra: checa total e cria PaymentIntent no backend
+  const finalizarCompra = async () => {
+    if (!usuarioId) {
+      setMensagem('Você precisa estar logado para finalizar a compra');
+      return;
+    }
+
+    try {
+      setPagarCarregando(true);
+
+      // 1) Obter total (opcional, apenas para exibir/validar)
+      const totalRes = await api.get('/pagamento/total');
+      const backendTotal = totalRes.data?.total ?? 0;
+
+      // Validação simples: o total do backend deve bater com o carrinho mostrado
+      if (carrinho && Math.abs((carrinho.total || 0) - backendTotal) > 0.01) {
+        // Pode atualizar o estado com o valor oficial do backend
+        setMensagem(`O total atualizado é R$ ${backendTotal.toFixed(2)}. Atualize o carrinho antes de pagar.`);
+        setPagarCarregando(false);
+        return;
+      }
+
+      // 2) Solicitar criação do PaymentIntent e receber clientSecret
+      const intentRes = await api.post('/criar-pagamento-cartao');
+      const clientSecret = intentRes.data?.clientSecret;
+
+      if (!clientSecret) {
+        setMensagem('Não foi possível iniciar o pagamento. Tente novamente.');
+        setPagarCarregando(false);
+        return;
+      }
+
+      // Armazenar clientSecret para o fluxo de pagamento (ou redirecionar para página de checkout)
+      // Garante ao TypeScript que o valor é uma string (já validado acima)
+      sessionStorage.setItem('stripe_client_secret', clientSecret as string); 
+
+      // Redireciona para uma rota de checkout (implemente /checkout para usar Stripe Elements)
+      // Se não existir, apenas mostra mensagem de sucesso
+      if (window.location.pathname !== '/checkout') {
+        navigate('/checkout');
+      } else {
+        setMensagem('Pagamento iniciado, prossiga com os dados do cartão.');
+      }
+
+    } catch (err: any) {
+      console.error('Erro ao iniciar pagamento:', err);
+      setMensagem(err?.response?.data?.error || 'Erro ao iniciar pagamento.');
+    } finally {
+      setPagarCarregando(false);
+    }
+  };
+
   return (
     <>
       <Header mostrarCadastro={true} userRole={role} />
@@ -290,7 +345,9 @@ console.log("Decoded data:", decodedData);
               <strong>R$ {(carrinho.total + 10).toFixed(2)}</strong>
             </div>
 
-            <button className="btn-checkout">Finalizar Compra</button>
+            <button className="btn-checkout" onClick={finalizarCompra} disabled={pagarCarregando}>
+              {pagarCarregando ? 'Processando...' : 'Finalizar Compra'}
+            </button>
           </aside>
         </div>
       </div>
