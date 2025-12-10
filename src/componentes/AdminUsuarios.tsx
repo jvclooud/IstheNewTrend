@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/api";
 import { Header } from "../componentes/Header";
 import { FaTrash, FaUserShield } from "react-icons/fa";
+import "./AdminUsuarios.css";
 
 
 interface Usuario {
@@ -91,29 +92,31 @@ export default function AdminUsuarios() {
             <tbody>
               {usuarios.map((u) => (
                 <tr key={u._id}>
-                  <td>{u.nome}</td>
-                  <td>{u.idade}</td>
-                  <td>{u.email}</td>
-                  <td>
+                  <td data-label="Nome">{u.nome}</td>
+                  <td data-label="Idade">{u.idade}</td>
+                  <td data-label="Email">{u.email}</td>
+                  <td data-label="Função">
                     <span className={`role ${u.role}`}>
                       {u.role === "admin" ? "Administrador" : "Usuário"}
                     </span>
                   </td>
-                  <td>
-                    {u.role !== "admin" && (
+                  <td data-label="Ações">
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {u.role !== "admin" && (
+                        <button
+                          className="btn-promover"
+                          onClick={() => promoverUsuario(u._id)}
+                        >
+                          <FaUserShield /> Promover
+                        </button>
+                      )}
                       <button
-                        className="btn-promover"
-                        onClick={() => promoverUsuario(u._id)}
+                        className="btn-remover"
+                        onClick={() => removerUsuario(u._id)}
                       >
-                        <FaUserShield /> Promover
+                        <FaTrash /> Remover
                       </button>
-                    )}
-                    <button
-                      className="btn-remover"
-                      onClick={() => removerUsuario(u._id)}
-                    >
-                      <FaTrash /> Remover
-                    </button>
+                    </div>
                   </td>
                 </tr>
               ))}

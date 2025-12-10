@@ -1,0 +1,123 @@
+/* Base similar to login.css */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #F8F9FA;
+  color: #212529;
+}
+
+.adminusuarios-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.adminusuarios-page > h1 {
+  color: #1A3769;
+  margin: 0 0 8px 0;
+  font-size: 2rem;
+}
+
+.subtitulo {
+  color: #495057;
+  margin-bottom: 20px;
+}
+
+.adminusuarios-page .usuarios-tabela {
+  width: 100%;
+  max-width: 980px;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  overflow: hidden;
+}
+
+.usuarios-tabela thead {
+  background: linear-gradient(90deg,#1A3769,#132749);
+  color: #fff;
+}
+
+.usuarios-tabela th,
+.usuarios-tabela td {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.usuarios-tabela tbody tr:hover {
+  background: #f7f9fc;
+}
+
+.role {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.role.admin {
+  background: #e6f0ff;
+  color: #11407a;
+}
+
+.role.user {
+  background: #f1f3f5;
+  color: #495057;
+}
+
+.btn-promover,
+.btn-remover {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.btn-promover {
+  background: #1A3769;
+  color: #fff;
+}
+
+.btn-promover:hover { background: #132749 }
+
+.btn-remover {
+  background: #fff;
+  color: #c92a2a;
+  border: 1px solid #f1c0c0;
+}
+
+.btn-remover:hover { background: #fff6f6 }
+
+.admin-erro,
+.admin-carregando,
+.vazio {
+  background: #fff;
+  max-width: 480px;
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  color: #495057;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .usuarios-tabela thead { display: none; }
+  .usuarios-tabela, .usuarios-tabela tbody, .usuarios-tabela tr, .usuarios-tabela td { display: block; width: 100%; }
+  .usuarios-tabela tr { margin-bottom: 12px; }
+  .usuarios-tabela td { text-align: right; padding-left: 50%; position: relative; }
+  .usuarios-tabela td::before { content: attr(data-label); position: absolute; left: 14px; top: 14px; font-weight: 700; color: #212529; }
+}
