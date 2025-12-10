@@ -13,6 +13,8 @@ import ProtectedUserRoute from './componentes/ProtectedUserRoute.tsx'
 import UserArea from './componentes/UserArea.tsx' // Componente para a área de usuário
 import AdminArea from './componentes/AdminArea.tsx' // Nova área do administrador
 import AdminUsuarios from "./componentes/AdminUsuarios";
+import Checkout from './componentes/Checkout.tsx'
+import StripeProvider from './componentes/StripeProvider.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -63,7 +65,24 @@ createRoot(document.getElementById('root')!).render(
         {/* Outras rotas permanecem as mesmas */}
         <Route path="/admin/usuarios" element={<AdminUsuarios />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/carrinho" element={<Carrinho />} />
+        <Route 
+          path="/carrinho" 
+          element={
+            <ProtectedUserRoute>
+              <Carrinho />
+            </ProtectedUserRoute>
+          } 
+        />
+        <Route 
+          path="/checkout" 
+          element={
+            <ProtectedUserRoute>
+              <StripeProvider>
+                <Checkout />
+              </StripeProvider>
+            </ProtectedUserRoute>
+          } 
+        />
         <Route path="/error" element={<Erro />} />
       </Routes>
     </BrowserRouter>
