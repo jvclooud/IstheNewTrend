@@ -6,7 +6,7 @@ import {
   CardCvcElement,
 } from "@stripe/react-stripe-js";
 import { useEffect, useState } from "react";
-import "./checkout.css";
+import "./Checkout.css";
 
 export default function Checkout() {
   const stripe = useStripe();
