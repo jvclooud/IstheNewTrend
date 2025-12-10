@@ -12,11 +12,7 @@ import ProtectedAdminRoute from './componentes/ProtectedAdminRoute.tsx'
 import ProtectedUserRoute from './componentes/ProtectedUserRoute.tsx'
 import UserArea from './componentes/UserArea.tsx' // Componente para a área de usuário
 import AdminArea from './componentes/AdminArea.tsx' // Nova área do administrador
-import Checkout from './componentes/Checkout.tsx' // Importa o componente Checkout
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-
-const stripe = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY); // sua chave pública
+import AdminUsuarios from "./componentes/AdminUsuarios";
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -65,10 +61,10 @@ createRoot(document.getElementById('root')!).render(
         />
 
         {/* Outras rotas permanecem as mesmas */}
+        <Route path="/admin/usuarios" element={<AdminUsuarios />} />
         <Route path="/login" element={<Login />} />
         <Route path="/carrinho" element={<Carrinho />} />
         <Route path="/error" element={<Erro />} />
-         <Route path="/checkout" element={ <Elements stripe={stripe}><Checkout/></Elements>} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

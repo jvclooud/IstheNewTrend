@@ -44,7 +44,23 @@ const AdminArea: React.FC = () => {
             <div className="sidebar" style={{ width: '250px', padding: '20px', backgroundColor: '#f9f9f9', borderRight: '1px solid #eee' }}>
                 <h3 style={{ borderBottom: '2px solid #5d5dff', paddingBottom: '10px' }}>Área do Administrador</h3>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
-                    <li style={{ marginBottom: '10px' }}><FaUsers /> Gerenciar Usuários</li>
+                    <li style={{ marginBottom: '10px' }}>
+                        <button
+                            onClick={() => navigate('/admin/usuarios')}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#333',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            <FaUsers /> Gerenciar Usuários
+                        </button>
+                    </li>
                     <li style={{ marginBottom: '10px' }}><FaBoxOpen /> Gerenciar Álbuns</li>
                     <li style={{ marginBottom: '10px' }}><FaChartLine /> Relatórios</li>
                     <li style={{ marginTop: '30px' }}>
