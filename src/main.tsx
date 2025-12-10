@@ -72,16 +72,6 @@ createRoot(document.getElementById('root')!).render(
             </ProtectedUserRoute>
           } 
         />
-        <Route 
-          path="/checkout" 
-          element={
-            <ProtectedUserRoute>
-              <StripeProvider>
-                <Checkout />
-              </StripeProvider>
-            </ProtectedUserRoute>
-          } 
-        />
         <Route path="/error" element={<Erro />} />
       </Routes>
     </BrowserRouter>
